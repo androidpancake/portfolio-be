@@ -12,6 +12,16 @@ class ContentController extends Controller
     {
         $data = Contents::all();
         return apiResponseClass::sendResponse($data, '', 200);
-        
+    }
+
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'title' => 'required',
+            'description' => 'required'
+        ]);
+
+        $db = Contents::create($validatedData);
+        return apiResponseClass::sendResponse($db, 'Success', 201);
     }
 }

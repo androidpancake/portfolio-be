@@ -13,7 +13,7 @@ class MenusController extends Controller
      */
     public function index()
     {
-        $data = Menus::all();
+        $data = Menus::orderBy('order', 'desc')->get();
         return apiResponseClass::sendResponse($data, '', 200);
     }
 

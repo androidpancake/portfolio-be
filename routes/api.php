@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\ContentController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\MenusController;
 use App\Http\Controllers\ProjectController;
@@ -20,6 +21,8 @@ Route::resource('skills', SkillController::class);
 Route::resource('educations', EducationController::class);
 Route::resource('certifications', CertificateController::class);
 Route::resource('menus', MenusController::class);
+Route::get('content', [ContentController::class, 'index']);
+Route::post('content', [ContentController::class, 'store']);
 
 // search
 Route::get('search/project', [SearchController::class, 'searchProject']);
