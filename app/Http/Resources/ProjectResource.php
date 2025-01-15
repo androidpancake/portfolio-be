@@ -16,11 +16,17 @@ class ProjectResource extends JsonResource
     {
         return [
             'title' => $this->title,
-            'description' => $this->title,
-            'image' => $this->title,
-            'category' => CategoryResource::collection($this->whenLoaded('category')),
-            'start_date' => $this->title,
-            'end_date' => $this->title,
+            'description' => $this->description,
+            'image' => $this->image,
+            'category_id' => $this->category_id,
+            'category' => $this->whenLoaded('categories', function () {
+                return $this->categories->name;
+            }),
+            'skills' => $this->whenLoaded('skills', function () {
+                return SkillsResource::collection($this->skills);
+            }),
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
         ];
     }
 }

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            $table->uuid('id')->change();
+        Schema::table('menuses', function (Blueprint $table) {
+            $table->integer('order');
         });
     }
 
@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('menuses', function (Blueprint $table) {
+            //
+        });
     }
 };

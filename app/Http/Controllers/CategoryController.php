@@ -14,7 +14,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $data = Categories::all();
+        $data = Categories::with('projects')->get();
         return apiResponseClass::sendResponse($data, '', 200);
     }
 

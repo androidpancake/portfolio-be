@@ -13,8 +13,13 @@ class Projects extends Model
 
     protected $fillable = ['title', 'description', 'image', 'url', 'category_id', 'start_date', 'end_date'];
 
-    public function Categories()
+    public function categories()
     {
         return $this->belongsTo(Categories::class, 'category_id');
+    }
+
+    public function skills()
+    {
+        return $this->belongsToMany(Skills::class, 'projects_skills', 'projects_id', 'skills_id', 'id', 'id');
     }
 }

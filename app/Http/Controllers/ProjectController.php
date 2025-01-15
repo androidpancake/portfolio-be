@@ -14,7 +14,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $data = Projects::with('Categories')->get();
+        $data = Projects::with('categories', 'skills')->get();
         return apiResponseClass::sendResponse(ProjectResource::collection($data), '', 200);
     }
 
@@ -27,18 +27,26 @@ class ProjectController extends Controller
             'title' => 'required',
             'description' => 'required',
             'url' => 'required',
-            'image' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
             'category_id' => 'required|exists:categories,id',
             'start_date' => 'required',
             'end_date' => 'required',
+            'skills' => 'required|array',
+            'skills.*' => 'exists:skills,id',
         ]);
 
         try {
-            //code...
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $name = time() . '.' . $image->getClientOriginalExtension();
+                $destinationPath = $image->storeAs('images', $name, 'public');
+                $validatedData['image'] = $destinationPath;
+            }
+
             $db = Projects::create($validatedData);
+            $db->skills()->attach($request->skills);
             return apiResponseClass::sendResponse($db, 'Project created successfully', 201);
         } catch (\Throwable $th) {
-            //throw $th;
             return apiResponseClass::rollback($th);
         }
     }

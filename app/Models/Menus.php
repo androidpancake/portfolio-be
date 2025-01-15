@@ -4,14 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Educations extends Model
+class Menus extends Model
 {
     protected $fillable = [
         'title',
-        'location',
-        'gpa',
-        'start_date',
-        'major',
-        'faculty'
+        'url',
+        'order'
     ];
 }
