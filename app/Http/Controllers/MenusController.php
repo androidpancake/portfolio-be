@@ -13,7 +13,7 @@ class MenusController extends Controller
      */
     public function index()
     {
-        $data = Menus::orderBy('order', 'desc')->get();
+        $data = Menus::where('is_display', '1')->orderBy('order', 'asc')->get();
         return apiResponseClass::sendResponse($data, '', 200);
     }
 
@@ -36,8 +36,7 @@ class MenusController extends Controller
             'order' => 'required|unique:menuses,order'
         ]);
 
-        if($validate)
-        {
+        if ($validate) {
             try {
                 $db = Menus::create($validate);
                 return apiResponseClass::sendResponse($db, 'Menu created successfully', 201);

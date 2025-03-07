@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SkillsResource extends JsonResource
+class EducationResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,12 +16,10 @@ class SkillsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'level' => $this->level,
-            'image' => $this->image,
-            'projects' => $this->whenLoaded('projects', function () {
-                return ProjectResource::collection($this->projects);
-            }),
+            'title' => $this->title,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+            'gpa' => $this->gpa,
         ];
     }
 }

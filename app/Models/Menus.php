@@ -9,6 +9,7 @@ class Menus extends Model
     protected $fillable = [
         'title',
         'url',
-        'order'
+        'order',
+        'is_display'
     ];
 }

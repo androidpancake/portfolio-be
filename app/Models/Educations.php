@@ -11,6 +11,7 @@ class Educations extends Model
         'location',
         'gpa',
         'start_date',
+        'end_date',
         'major',
         'faculty'
     ];

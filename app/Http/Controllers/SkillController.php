@@ -28,7 +28,13 @@ class SkillController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|unique:skills,name',
             'level' => ['required', new Enum(SkillLevel::class)],
+            'images' => 'required'
         ]);
+
+        // if($request->hasFile('images'))
+        // {
+        //     $image = 
+        // }
 
         if ($validatedData) {
             try {
@@ -53,7 +59,9 @@ class SkillController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // $validatedData = $request->validate([
+        //     'name'
+        // ])
     }
 
     /**

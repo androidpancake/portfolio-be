@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\apiResponseClass;
+use App\Http\Resources\CategoryResource;
 use App\Models\Categories;
 use Exception;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class CategoryController extends Controller
     public function index()
     {
         $data = Categories::with('projects')->get();
-        return apiResponseClass::sendResponse($data, '', 200);
+        return apiResponseClass::sendResponse(CategoryResource::collection($data), '', 200);
     }
 
     /**

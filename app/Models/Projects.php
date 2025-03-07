@@ -6,12 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Categories;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class Projects extends Model
 {
-    use HasUuids, HasFactory;
+    use HasUuids, HasFactory, Searchable;
+    // Searchable
 
-    protected $fillable = ['title', 'description', 'image', 'url', 'category_id', 'start_date', 'end_date'];
+    protected $fillable = ['title', 'slug', 'description', 'image', 'url', 'category_id', 'start_date', 'end_date', 'created_at'];
+
+    public function toSearchableArray()
+    {
+        return [
+            'title' => $this->title,
+            'slug' => $this->slug
+        ];
+    }
 
     public function categories()
     {
@@ -21,5 +31,10 @@ class Projects extends Model
     public function skills()
     {
         return $this->belongsToMany(Skills::class, 'projects_skills', 'projects_id', 'skills_id', 'id', 'id');
+    }
+
+    public function detailProject()
+    {
+        return $this->hasOne(ProjectDetail::class);
     }
 }
