@@ -12,14 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('projects', function (Blueprint $table) {
-            $table->uuid();
+            $table->uuid('id')->index();
             $table->string('title');
+            $table->string('slug');
             $table->text('description');
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->string('url');
             $table->unsignedBigInteger('category_id');
             $table->date('start_date');
             $table->date('end_date');
+            $table->string('status');
+            $table->timestamp('scehduled_at')->nullable();
             $table->timestamps();
         });
     }

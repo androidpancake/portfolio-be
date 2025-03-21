@@ -19,7 +19,7 @@ class SkillsResource extends JsonResource
             'name' => $this->name,
             'level' => $this->level,
             'image' => $this->image,
-            'projects' => $this->whenLoaded('projects', function () {
+            'projects' => $this->whenHas('projects', function () {
                 return ProjectResource::collection($this->projects);
             }),
         ];

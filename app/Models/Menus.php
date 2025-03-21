@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Menus extends Model
 {
+    protected $primaryKey = 'id';
+    
     protected $fillable = [
         'title',
         'url',

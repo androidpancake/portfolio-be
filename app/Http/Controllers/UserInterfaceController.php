@@ -7,6 +7,7 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProjectResource;
 use App\Models\Categories;
 use App\Models\Projects;
+use App\Models\Skills;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Type\Integer;
@@ -21,9 +22,9 @@ class UserInterfaceController extends Controller
 
         return response()->json([
             'total' => $res
-        ]); 
+        ]);
     }
-    
+
     public function getProjectDataLimit(Request $request)
     {
         $limit = $request->query('limit', 10);
@@ -49,22 +50,20 @@ class UserInterfaceController extends Controller
         $sortByAdded = $request->query('sortByAdded', 'desc');
         $search = $request->query('title');
 
-        $query = Projects::with('categories', 'skills', 'detailProject');
+        $query = Projects::with('categories', 'skills', 'detailProject')->where('status', 'published');
 
-        if($search)
-        {
+        if ($search) {
             $query->where('title', 'LIKE', '%' . $search . '%');
         }
 
-        if($category)
-        {
+        if ($category) {
             $categories = is_array($category) ? $category : explode(',', $category);
             $query->whereIn('category_id', $categories);
         }
 
         if ($skill) {
             $skills = is_array($skill) ? $skill : explode(',', $skill);
-            $query->whereHas('skills', function($q) use ($skills){
+            $query->whereHas('skills', function ($q) use ($skills) {
                 $q->whereIn('skills.id', $skills);
             });
         }
@@ -73,23 +72,27 @@ class UserInterfaceController extends Controller
             $query->orderBy('end_date', $sort);
         }
 
-        if($sortByName) {
+        if ($sortByName) {
             $query->orderBy('title', $sortByName);
         }
 
-        if($sortByAdded) {
+        if ($sortByAdded) {
             $query->orderBy('created_at', $sortByAdded);
         }
-        
+
         try {
             //code...
             $data = $query->paginate(5);
+            return apiResponseClass::sendResponse($data, '', 200);
         } catch (\Throwable $th) {
             //throw $th;
             return apiResponseClass::sendError($th, 'Failed to get data', 404);
         }
-
-        return apiResponseClass::sendResponse($data, '', 200);
     }
 
+    public function getSkillsWithProjects()
+    {
+        $data = Skills::with('projects')->get();
+        return apiResponseClass::sendResponse($data, '', 200);
+    }
 }

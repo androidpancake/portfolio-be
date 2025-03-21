@@ -7,8 +7,10 @@ use App\Http\Resources\ProjectResource;
 use App\Models\Projects;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Type\Integer;
 use SebastianBergmann\CodeCoverage\Report\Xml\Project;
+use Illuminate\Support\Str;
 
 class ProjectController extends Controller
 {
@@ -17,58 +19,8 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $data = Projects::with('categories', 'skills', 'detailProject')->latest()->paginate(4);
+        $data = Projects::with('categories', 'skills', 'detailProject')->where('status', 'published')->latest()->paginate(4);
         return apiResponseClass::sendResponse(ProjectResource::collection($data), '', 200);
-    }
-
-    public function filter(Request $request)
-    {
-        $category = $request->query('category', []);
-        $sort = $request->input('sort', 'desc');
-        $skill = $request->input('skill', []);
-
-        $dt = Projects::with('categories', 'skills', 'detailProject');
-
-        if($category)
-        {
-            $categories = is_array($category) ? $category : explode(',', $category);
-            $dt->where('category_id', $categories);
-        }
-
-        // $query = DB::table('projects')
-        // ->whereIn('category_id', $category)
-        // ->leftJoin('projects_skills', 'projects.id', '=', 'projects_skills.projects_id');
-
-        // if($category)
-        // {
-        //     $categories = is_array($category) ? $category : explode(',', $category);
-        //     $query->whereIn('projects.category_id', $categories);
-        // }
-
-        // if ($skill) {
-        //     $skills = is_array($skill) ? $skill : explode(',', $skill);
-        //     $query->whereIn('projects_skills.skill_id', $skills);
-        // }
-
-        // if ($sort) {
-        //     $query->orderBy('projects.end_date', $sort);
-        // }
-
-        $data = $dt->get();
-
-        return apiResponseClass::sendResponse(ProjectResource::collection($data), '', 200);
-    }
-
-    public function counts()
-    {
-        try {
-            //code...
-            $data = Projects::with('categories', 'skills')->get();
-            return apiResponseClass::sendResponse($data, '', 200);
-        } catch (\Throwable $th) {
-            //throw $th;
-            $th->getMessage();
-        }
     }
 
     function slugify($string)
@@ -86,61 +38,80 @@ class ProjectController extends Controller
     {
         $validatedData = $request->validate([
             'title' => 'required|unique:projects,title',
-            'slug' => 'nullable',
             'description' => 'required',
             'url' => 'required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => 'nullable|exists:categories,id',
             'start_date' => 'required',
             'end_date' => 'required',
+            'status' => 'required|in:draft,published,scheduled',
+            'scheduled_at' => [
+                'nullable',
+                'date',
+
+                function ($value, $fail) use ($request) {
+                    if ($request->status === 'scheduled' && empty($value)) {
+                        $fail('required to fill schedule time');
+                    }
+                },
+            ],
             'skills' => 'required|array',
             'skills.*' => 'exists:skills,id',
 
+        ], [
+            'title.required' => 'title required',
+            'description.required' => 'description required',
+            'url.required' => 'url required',
+            'category_id.required' => 'category_id required',
+            'start_date.required' => 'start_date required',
+            'end_date.required' => 'end_date required',
+            'status.required' => 'status required',
+            'skills.required' => 'skill required'
         ]);
 
         $detailProjectValidatedData = $request->validate([
-            'project_id' => 'exists:projects,id',
             'background' => 'required',
-            'stack1' => 'required',
+            'stack1' => 'nullable',
             'stack2' => 'nullable',
             'stack3' => 'nullable',
-            'db' => 'required',
-            'logo' => 'required'
+            'db' => 'nullable',
+            'logo' => 'nullable'
         ]);
 
-        // dd($validatedData['slug']);
-
+        Log::info($validatedData);
         $validatedData['slug'] = $this->slugify($validatedData['title']);
-
 
         try {
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
-                $name = time() . '.' . $image->getClientOriginalExtension();
+                $name = Str::uuid() . '.' . $image->getClientOriginalExtension();
                 $destinationPath = $image->storeAs('images', $name, 'public');
                 $validatedData['image'] = $destinationPath;
             }
 
-            $db = Projects::create($validatedData);
-            $db->skills()->attach($request->skills);
-            $db->detailProject()->attach($detailProjectValidatedData);
+            if ($validatedData && $detailProjectValidatedData) {
+
+                $db = Projects::create($validatedData);
+                $db->skills()->attach($request->skills);
+
+                $detailProjectValidatedData['project_id'] = $db->id;
+                $db->detailProject()->create($detailProjectValidatedData);
+            }
+
 
             return apiResponseClass::sendResponse($db, 'Project created successfully', 201);
         } catch (\Throwable $th) {
-            return apiResponseClass::rollback($th);
+            return apiResponseClass::rollback($th, $th->getMessage(), 500);
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show() {}
-
-    public function showBySlug(string $slug)
+    public function show(Projects $projects)
     {
-        $data = Projects::with('categories', 'skills', 'detailProject')->where('slug', $slug)->first();
+        $data = Projects::with('categories', 'skills', 'detailProject')->where('slug', $projects->slug)->first();
         // $projectById = $data->where('id', $data->id)->get();
-
 
         return apiResponseClass::sendResponse(new ProjectResource($data), '', 200);
     }
@@ -148,22 +119,22 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Projects $projects)
     {
-        $data = Projects::findOrFail($id);
+        $projects = Projects::findOrFail($projects->id);
 
         $validatedData = $request->validate([
-            'title' => 'nullable|unique:projects,title',
+            'title' => 'required',
             'slug' => 'nullable',
             'description' => 'required',
             'url' => 'required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
-            'category_id' => 'nullable|exists:categories,id',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date',
+            'category_id' => 'required|exists:categories,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'status' => 'required|in:draft,published,scheduled',
             'skills' => 'nullable|array',
             'skills.*' => 'exists:skills,id',
-
         ]);
 
         $detailProjectValidatedData = $request->validate([
@@ -186,22 +157,34 @@ class ProjectController extends Controller
                 $validatedData['image'] = $destinationPath;
             }
 
-            $db = $data->whereId($data->id)->update($validatedData);
-            $db->skills()->attach($request->skills);
-            $db->detailProject()->attach($detailProjectValidatedData);
+            $db = $projects->where('id', $projects->id)->update($validatedData);
 
-            return apiResponseClass::sendResponse($data, 'Project updated successfully', 201);
+            if ($request->skills) {
+                $db->skills()->sync($request->skills);
+            }
+
+            if ($detailProjectValidatedData) {
+                $projects->detailProject()->updateOrCreate($detailProjectValidatedData);
+            }
+
+            $success = $projects->title . ' Success Update Data';
+
+            return apiResponseClass::sendResponse($success, 'Project updated successfully', 201);
         } catch (\Throwable $th) {
-            return apiResponseClass::sendError($th);
+            return apiResponseClass::sendError($th->getMessage(), 'Failed to update data');
         }
-
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Projects $projects)
     {
-        //
+        $projectData = Projects::findOrFail($projects->id);
+        $projectData->detailProject()->delete();
+        $projectData->skills()->detach();
+        $projectData->delete();
+
+        return apiResponseClass::sendResponse($projectData->title . 'Deleted', 'Success delete project data', 200);
     }
 }

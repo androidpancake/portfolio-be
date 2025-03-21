@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('educations', function (Blueprint $table) {
-            $table->string('major');
-            $table->string('faculty');
+        Schema::create('projects_skills', function (Blueprint $table) {
+            $table->id();
+            $table->foreignUuid('projects_id');
+            $table->unsignedBigInteger('skills_id');
+            $table->timestamps();
         });
     }
 
@@ -22,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('educations', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('projects_skills');
     }
 };

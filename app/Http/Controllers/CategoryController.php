@@ -15,7 +15,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $data = Categories::with('projects')->get();
+        $data = Categories::all();
         return apiResponseClass::sendResponse(CategoryResource::collection($data), '', 200);
     }
 
@@ -24,55 +24,66 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->all();
-        // var_dump($data);
-
         $validatedData = $request->validate([
-            'name' => 'required',
+            'name' => 'required|unique:categories,name',
         ]);
 
-        if($validatedData)
-        {
+        // dd($validatedData);
+
+        if ($validatedData) {
             $db = Categories::create($validatedData);
             return apiResponseClass::sendResponse($db, 'Category created successfully', 201);
         }
-
-        // // var_dump($data);
-        // try {
-        //     //code...
-        //     $validatedData = $request->validate([
-        //         'name' => 'required',
-        //     ]);
-
-        //     $db = Categories::create($validatedData);
-        //     return apiResponseClass::sendResponse($db, 'Category created successfully', 201);
-        // } catch (\Exception $th) {
-        //     //throw $th;
-        //     return apiResponseClass::rollback($th, 'Category creation failed', 500);
-        // }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Categories $categories)
     {
-        //
+        $categoryData = Categories::findOrFail($categories);
+
+        return apiResponseClass::sendResponse($categoryData, 'Success', 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Categories $categories)
     {
-        //
+        $categoryData = Categories::findOrFail($categories->id);
+
+        // dd($categoryData);
+
+        $validatedData = $request->validate([
+            'name' => 'nullable|unique:categories,name'
+        ]);
+
+        // dd($validatedData);
+
+        try {
+            //code...
+            if ($validatedData) {
+                $db = $categoryData->where('id', $categoryData->id)->update($validatedData);
+                return apiResponseClass::sendResponse($db, 'Category updated successfully', 200);
+            } else {
+                return apiResponseClass::sendError($validatedData, 'Failed to update category', 400);
+            }
+        } catch (\Throwable $th) {
+            return apiResponseClass::sendError($th->getMessage(), 'Error', 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Categories $categories)
     {
-        //
+        $categoryData = Categories::findOrFail($categories->id);
+        $categoryData->delete();
+
+        $success = 'Success Delete Data';
+
+        return apiResponseClass::sendResponse($categoryData->name, 'Success Delete Data', 201);
     }
 }

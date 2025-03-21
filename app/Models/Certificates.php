@@ -10,7 +10,8 @@ class Certificates extends Model
         'title',
         'organizer',
         'image',
-        'file'
+        'file',
+        'expired_date',
+        'category_id'
     ];
-
 }

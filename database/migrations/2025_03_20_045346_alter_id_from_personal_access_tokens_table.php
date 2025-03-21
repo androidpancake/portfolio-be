@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('skills', function (Blueprint $table) {
-            $table->string('name');
-            $table->enum('level', ['beginner', 'intermediate', 'advanced']);
+        Schema::table('personal_access_tokens', function (Blueprint $table) {
+            $table->uuid('id')->change();
         });
     }
 
@@ -22,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('skills', function (Blueprint $table) {
-            //
+        Schema::table('personal_access_tokens', function (Blueprint $table) {
+            $table->id();
         });
     }
 };
