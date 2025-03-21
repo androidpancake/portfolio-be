@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\apiResponseClass;
 use App\Http\Resources\SkillsResource;
+use App\Models\Categories;
 use App\Models\Skills;
 use App\SkillLevel;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class SkillController extends Controller
      */
     public function index()
     {
-        $data = Skills::with('projects')->get();
+        $data = Skills::all();
         return apiResponseClass::sendResponse(SkillsResource::collection($data), 'Successfully retrieved skills data', 200);
     }
 
@@ -57,18 +58,37 @@ class SkillController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Skills $skills)
     {
-        // $validatedData = $request->validate([
-        //     'name'
-        // ])
+        $skillData = Skills::findOrFail($skills->id);
+
+        $validatedData = $request->validate([
+            'name' => 'nullable|unique:skill,name',
+            'level' => 'required|in:beginner,intermediate,expert'
+        ]);
+
+        // dd($validatedData);
+
+        try {
+            //code...
+            if ($validatedData) {
+                $db = $skillData->where('id', $skillData->id)->update($validatedData);
+                return apiResponseClass::sendResponse($db, 'Skills updated successfully', 200);
+            } else {
+                return apiResponseClass::sendError($validatedData, 'Failed to update skill', 400);
+            }
+        } catch (\Throwable $th) {
+            return apiResponseClass::sendError($th->getMessage(), 'Error', 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Skills $skills)
     {
-        //
+        $skills->delete();
+
+        return apiResponseClass::sendResponse($skills->name, 'Success Delete Skill' . $skills->name, 201);
     }
 }

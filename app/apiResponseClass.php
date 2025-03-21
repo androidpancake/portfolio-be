@@ -47,9 +47,9 @@ class apiResponseClass
         throw new HttpResponseException(response()->json(['message' => $message], 500));
     }
 
-    public static function rollback($e, $message = 'Something wrong, process not completed')
+    public static function rollback($e, $message = 'Something wrong, process not completed', $code = 500)
     {
         DB::rollBack();
-        self::throw($e, $message);
+        self::throw($e, $message, $code);
     }
 }

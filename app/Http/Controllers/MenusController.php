@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\apiResponseClass;
 use App\Models\Menus;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MenusController extends Controller
 {
@@ -33,7 +34,13 @@ class MenusController extends Controller
         $validate = $request->validate([
             'title' => 'required',
             'url' => 'required',
-            'order' => 'required|unique:menuses,order'
+            'order' => 'required|unique:menuses,order',
+            'is_display' => 'required|in:1,0'
+        ], [
+            'title.required' => 'title required',
+            'url' => 'url/path required',
+            'order' => 'order required or exists',
+            'is_display' => 'menu is_display must be filled'
         ]);
 
         if ($validate) {
@@ -41,7 +48,7 @@ class MenusController extends Controller
                 $db = Menus::create($validate);
                 return apiResponseClass::sendResponse($db, 'Menu created successfully', 201);
             } catch (\Throwable $th) {
-                return apiResponseClass::rollback($th->getMessage(), 'Error creating menu');
+                return apiResponseClass::rollback([$th->getMessage(), throw ValidationException::withMessages($validate)], 'Error creating menu');
             }
         }
     }
@@ -49,9 +56,9 @@ class MenusController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Menus $menus)
+    public function show(Menus $id)
     {
-        //
+        return apiResponseClass::sendResponse($id, '', 200);
     }
 
     /**
@@ -67,7 +74,27 @@ class MenusController extends Controller
      */
     public function update(Request $request, Menus $menus)
     {
-        //
+
+        $validate = $request->validate([
+            'title' => 'required|unique',
+            'url' => 'required',
+            'order' => 'required|unique:menuses,order',
+            'is_display' => 'required|in:1,0'
+        ], [
+            'title.required' => 'title required',
+            'url' => 'url/path required',
+            'order' => 'order required or exists',
+            'is_display' => 'menu is_display must be filled'
+        ]);
+
+        if ($validate) {
+            try {
+                $db = $menus->update($validate);
+                return apiResponseClass::sendResponse($db, 'Menu updated successfully', 201);
+            } catch (\Throwable $th) {
+                return apiResponseClass::rollback([$th->getMessage(), throw ValidationException::withMessages($validate)], 'Error creating menu');
+            }
+        }
     }
 
     /**
@@ -75,6 +102,8 @@ class MenusController extends Controller
      */
     public function destroy(Menus $menus)
     {
-        //
+        $success = $menus->delete();
+
+        return apiResponseClass::sendResponse($success, 'Success Delete Menu', 200);
     }
 }

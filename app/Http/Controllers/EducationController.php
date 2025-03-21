@@ -15,7 +15,7 @@ class EducationController extends Controller
     public function index()
     {
         $data = Educations::all();
-        return apiResponseClass::sendResponse($data, '', 200);
+        return apiResponseClass::sendResponse($data, 'Success retrieve education data', 200);
     }
 
     /**
@@ -42,7 +42,9 @@ class EducationController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $educationData = Educations::find($id)->get();
+
+        return apiResponseClass::sendResponse($educationData, 'Success get detail', 200);
     }
 
     /**
@@ -50,7 +52,20 @@ class EducationController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $educationData = Educations::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'title' => 'required',
+            'location' => 'required',
+            'gpa' => 'required',
+            'start_date' => 'required',
+            'end_date' => 'required',
+            'major' => 'required',
+            'faculty' => 'required'
+        ]);
+
+        $db = $educationData->update($validatedData);
+        return apiResponseClass::sendResponse($db, 'Education updated', 200);
     }
 
     /**
@@ -58,6 +73,9 @@ class EducationController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $educationData = Educations::findOrFail($id);
+        $success = $educationData->delete();
+
+        return apiResponseClass::sendResponse($success, 'Success delete education', 200);
     }
 }

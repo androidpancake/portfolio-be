@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ContentController;
@@ -17,27 +18,99 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::resource('projects', ProjectController::class);
-Route::resource('categories', CategoryController::class);
-Route::resource('skills', SkillController::class);
-Route::resource('educations', EducationController::class);
-Route::resource('certifications', CertificateController::class);
-Route::resource('menus', MenusController::class);
-Route::get('content', [ContentController::class, 'index']);
-Route::post('content', [ContentController::class, 'store']);
-Route::get('projects/detail/{id}', [ProjectDetailController::class, 'show']);
-Route::post('projects/detail', [ProjectDetailController::class, 'store']);
+Route::controller(AuthController::class)->group(function () {
+    Route::post('register', 'registerUserApp');
+    Route::post('token', 'getTokenApp');
+    Route::post('admin/token', 'getTokenAdmin');
+    Route::post('forgot-password', 'forgotPassword');
+    Route::post('approve', 'approveUserApp')->middleware('auth:sanctum');
+});
 
-Route::get('projects/slug/{slug}', [ProjectController::class, 'showBySlug']);
-Route::get('projects/filter', [ProjectController::class, 'filter']);
+Route::controller(ProjectController::class)->group(function () {
+    Route::post('projects', 'store')->middleware(['auth:sanctum', 'abilities:admin']);
+    Route::patch('projects/{projects}', 'update')->middleware(['auth:sanctum', 'abilities:admin']);
+    Route::delete('projects/{projects}', 'destroy')->middleware(['auth:sanctum', 'abilities:admin']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('projects', 'index');
+        Route::get('projects/slug/{projects:slug}', 'show');
+    });
+});
+
+Route::controller(CategoryController::class)->group(function () {
+    Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
+        Route::post('categories', 'store');
+        Route::patch('categories/{categories}', 'update');
+        Route::delete('categories/{categories}', 'destroy');
+    });
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('categories', 'index');
+    });
+});
+
+Route::controller(SkillController::class)->group(function () {
+    Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
+        Route::post('skills', 'store');
+        Route::patch('skills/{skills}', 'update');
+        Route::delete('skills/{skills}', 'destroy');
+    });
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('skills', 'index');
+    });
+});
+
+Route::controller(EducationController::class)->group(function () {
+    Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
+        Route::post('educations', 'store');
+        Route::patch('educations/{educations}', 'update');
+        Route::delete('educations/{educations}', 'destroy');
+    });
+    Route::middleware(['auth:sanctum', 'abilities:get-data'])->group(function () {
+        Route::get('educations', 'index');
+    });
+});
+
+Route::controller(CertificateController::class)->group(function () {
+    Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
+        Route::post('certifications', 'store');
+        Route::patch('certifications/{certifications}', 'update');
+        Route::delete('certifications/{certifications}', 'destroy');
+    });
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('certifications', 'index');
+    });
+});
+
+Route::controller(MenusController::class)->group(function () {
+    Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
+        Route::post('menus', 'store');
+        Route::patch('menus/{menus}', 'update');
+        Route::delete('menus/{menus}', 'destroy');
+    });
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('menus', 'index');
+    });
+});
+
+Route::controller(ContentController::class)->group(function () {
+    Route::middleware(['auth:sanctum', 'abilities:admin'])->group(function () {
+        Route::post('content', 'store');
+        Route::patch('content/{content}', 'update');
+        Route::delete('content/{content}', 'destroy');
+    });
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('content', 'index');
+    });
+});
+
+// detail
+Route::post('projects/detail', [ProjectDetailController::class, 'store']);
 
 // search
 Route::get('search/project', [SearchController::class, 'searchProject']);
 
-// count
-Route::get('projects/counts', [ProjectController::class, 'counts']);
-
 // Route::get('search', function)
-Route::get('ui/projects/count', [UserInterfaceController::class, 'countProjectData']);
-Route::get('ui/projects/pagelimit/{limit}/{page}', [UserInterfaceController::class, 'getProjectDataLimit']);
-Route::get('ui/projects/filter', [UserInterfaceController::class, 'getProjectWithFilter']);
+Route::controller(UserInterfaceController::class)->group(function () {
+    Route::get('ui/projects/count', 'countProjectData');
+    Route::get('ui/projects/pagelimit/{limit}/{page}', 'getProjectDataLimit');
+    Route::get('ui/projects/filter', 'getProjectWithFilter');
+})->middleware(['auth:sanctum']);

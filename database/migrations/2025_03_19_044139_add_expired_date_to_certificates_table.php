@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            $table->string('slug');
+        Schema::table('certificates', function (Blueprint $table) {
+            $table->date('expired_date')->nullable();
+            $table->unsignedBigInteger('category_id');
         });
     }
 
@@ -21,8 +22,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            //
+        Schema::table('certificates', function (Blueprint $table) {
+            Schema::dropColumns('certificates', [
+                'expired_date',
+                'category_id'
+            ]);
         });
     }
 };

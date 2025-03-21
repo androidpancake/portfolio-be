@@ -9,5 +9,6 @@ class Contents extends Model
     protected $fillable = [
         'title',
         'description',
+        'tags',
     ];
 }

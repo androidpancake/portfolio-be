@@ -32,4 +32,6 @@ class ProjectDetailController extends Controller
 
         return apiResponseClass::sendResponse($db, 'Detail Project Added', 200);
     }
+
+    public function destroy(ProjectDetail $projectDetail) {}
 }
