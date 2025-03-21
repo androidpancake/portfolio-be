@@ -64,7 +64,7 @@ class SkillController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'nullable|unique:skill,name',
-            'level' => 'required|in:beginner,intermediate,expert'
+            'level' => 'required|in:beginner,intermediate,advance'
         ]);
 
         // dd($validatedData);

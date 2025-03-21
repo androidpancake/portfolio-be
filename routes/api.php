@@ -103,7 +103,7 @@ Route::controller(ContentController::class)->group(function () {
 });
 
 // detail
-Route::post('projects/detail', [ProjectDetailController::class, 'store']);
+Route::post('projects/detail', [ProjectDetailController::class, 'store'])->middleware(['auth-sanctum', 'admin']);
 
 // search
 Route::get('search/project', [SearchController::class, 'searchProject']);
