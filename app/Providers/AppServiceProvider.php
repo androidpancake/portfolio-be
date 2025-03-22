@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Models\PersonalAccessToken;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
-use Symfony\Component\Routing\Generator\UrlGenerator;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,12 +20,12 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(UrlGenerator $url): void
+    public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
         if (env('APP_ENV') == 'production') {
-            $url->forceScheme('https');
+            URL::forceScheme('https');
         }
     }
 }
