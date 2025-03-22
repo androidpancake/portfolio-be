@@ -75,8 +75,8 @@ class AuthController extends Controller
     {
         $userData = $request->validate([
             'user_id' => 'required|exists:users,user_id',
-        ]);
-
+        ], ['user_id' => 'User not found']);
+     
         $findUserToApprove = User::where('user_id', $userData['user_id'])->first();
 
         if ($findUserToApprove) {

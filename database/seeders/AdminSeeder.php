@@ -14,7 +14,6 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'admin',
             'user_id' => 'admin-portfolio',
             'username' => 'adminpfe',
             'is_approved' => '1',
