@@ -13,6 +13,9 @@ php artisan config:cache
 echo "Caching routes..."
 php artisan route:cache
 
+echo "Optimizing"
+php artisan optimize
+
 echo "Running migrations..."
 php artisan migrate --force
 
