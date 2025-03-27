@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('project_detail', function (Blueprint $table) {
             $table->id();
             $table->foreignUuid('project_id');
-            $table->string('background');
+            $table->text('background');
             $table->string('stack1')->nullable();
             $table->string('stack2')->nullable();
             $table->string('stack3')->nullable();
-            $table->string('db');
-            $table->string('logo');
+            $table->string('db')->nullable();
+            $table->string('logo')->nullable();
             $table->timestamps();
         });
     }
