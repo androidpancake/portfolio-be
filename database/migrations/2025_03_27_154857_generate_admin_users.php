@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,9 +13,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('is_approved')->default('0');
-        });
+        User::create([
+            'user_id' => 'admin-portfolio-1',
+            'username' => 'adminpfe1',
+            'is_approved' => '1',
+            'password' => 'Admin123',
+        ]);
     }
 
     /**
@@ -21,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            Schema::dropColumns('users', 'is_approved');
-        });
+        User::where('user_id', 'admin-portfolio-1')->delete();
     }
 };
